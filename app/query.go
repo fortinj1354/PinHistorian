@@ -11,8 +11,8 @@ import (
 type Response struct {
 	TeamID       string           `json:"teamId"`
 	ChannelID    string           `json:"channelId"`
-	StartTime    string           `json:"startTime"`
-	EndTime      string           `json:"endTime"`
+	StartTime    string           `json:"startTime,omitempty"`
+	EndTime      string           `json:"endTime,omitempty"`
 	Results      []models.Message `json:"results"`
 	TotalResults int              `json:"totalResults"`
 }
