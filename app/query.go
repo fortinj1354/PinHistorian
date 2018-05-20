@@ -1,11 +1,12 @@
 package app
 
 import (
-	"github.com/fortinj1354/Pin-Historian/models"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"sort"
 	"time"
+
+	"github.com/fortinj1354/Pin-Historian/models"
+	"github.com/gin-gonic/gin"
 )
 
 type Response struct {

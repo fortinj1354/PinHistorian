@@ -1,13 +1,14 @@
 package app
 
 import (
+	"net/http"
+	"regexp"
+	"time"
+
 	"github.com/fortinj1354/Pin-Historian/models"
 	"github.com/fortinj1354/Pin-Historian/settings"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"net/http"
-	"regexp"
-	"time"
 )
 
 func HandlePost(c *gin.Context) {

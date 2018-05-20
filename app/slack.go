@@ -2,15 +2,16 @@ package app
 
 import (
 	"encoding/json"
+	"net/http"
+	"regexp"
+	"strconv"
+	"time"
+
 	"github.com/fortinj1354/Pin-Historian/models"
 	"github.com/fortinj1354/Pin-Historian/settings"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/parnurzeal/gorequest"
-	"net/http"
-	"regexp"
-	"strconv"
-	"time"
 )
 
 func HandleUrlVerification(c *gin.Context) {
