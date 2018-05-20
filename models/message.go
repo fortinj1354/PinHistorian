@@ -6,14 +6,14 @@ import (
 )
 
 type Message struct {
-	EventID     string
-	TeamID      string
-	ChannelID   string
-	ChannelName string
-	UserID      string
-	UserDisplay string
-	MessageText string
-	MessageTime time.Time
+	EventID     string    `json:"eventId"`
+	TeamID      string    `json:"teamId"`
+	ChannelID   string    `json:"channelId"`
+	ChannelName string    `json:"channelName"`
+	UserID      string    `json:"userId"`
+	UserDisplay string    `json:"userDisplay"`
+	MessageText string    `json:"messageText"`
+	MessageTime time.Time `json:"messageTime"`
 }
 
 func SaveMessage(message *Message) {
