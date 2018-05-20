@@ -1,8 +1,8 @@
-#Pin Historian
+# Pin Historian
 
 Records and stores pins for Slack. Currently only supports one server per instance.
 
-##Running
+## Running
 
 Required Environment Variables:
 
