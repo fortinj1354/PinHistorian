@@ -15,3 +15,7 @@ func MakeDB(dbFile string) {
 	}
 	db = newDb
 }
+
+func Health() error {
+	return db.Ping()
+}

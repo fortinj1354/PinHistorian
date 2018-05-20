@@ -17,7 +17,8 @@ func main() {
 	router.Use(sentry.Recovery(raven.DefaultClient, false))
 
 	router.POST("/", app.HandlePost)
-	router.GET("/:teamId/:channelId", app.HandleGet)
+	router.GET("/health", app.HandleHealth)
+	router.GET("/pins/:teamId/:channelId", app.HandleGet)
 
 	router.Run()
 }

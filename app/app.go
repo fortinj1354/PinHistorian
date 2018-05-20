@@ -69,3 +69,12 @@ func HandleGet(c *gin.Context) {
 		c.JSON(http.StatusOK, response)
 	}
 }
+
+func HandleHealth(c *gin.Context) {
+	err := models.Health()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		panic(err)
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
