@@ -15,7 +15,7 @@ import (
 )
 
 func HandleUrlVerification(c *gin.Context) {
-	var verificationJson models.UrlVerificationSlackPost
+	var verificationJson models.SlackURLVerificationPost
 	if err := c.ShouldBindBodyWith(&verificationJson, binding.JSON); err == nil {
 		c.JSON(http.StatusOK, gin.H{"challenge": verificationJson.Challenge})
 	} else {
@@ -23,8 +23,24 @@ func HandleUrlVerification(c *gin.Context) {
 	}
 }
 
-func HandlePinnedItem(c *gin.Context) {
-	var pinJson models.PinSlackPost
+func HandleEventCallback(c *gin.Context) {
+	var eventCallbackJson models.SlackEventCallbackPost
+	if err := c.ShouldBindBodyWith(&eventCallbackJson, binding.JSON); err == nil {
+		eventType := eventCallbackJson.Event.Type
+		if eventType == "pin_added" {
+			handlePinnedItem(c)
+		} else if eventType == "channel_rename" {
+			handleChannelRename(c)
+		} else if eventType == "user_change" {
+			handleUserChange(c)
+		}
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+}
+
+func handlePinnedItem(c *gin.Context) {
+	var pinJson models.SlackPinPost
 	if err := c.ShouldBindBodyWith(&pinJson, binding.JSON); err == nil {
 		timestamp, err := strconv.ParseFloat(pinJson.Event.Item.Message.Ts, 64)
 		if err != nil {
@@ -43,6 +59,36 @@ func HandlePinnedItem(c *gin.Context) {
 
 		models.SaveMessage(message)
 
+		c.JSON(http.StatusNoContent, nil)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+}
+
+func handleChannelRename(c *gin.Context) {
+	var channelJson models.SlackChannelRenamePost
+	if err := c.ShouldBindBodyWith(&channelJson, binding.JSON); err == nil {
+		channelModel := models.Channel{
+			TeamID:      channelJson.TeamID,
+			ChannelID:   channelJson.Event.Channel.ID,
+			ChannelName: channelJson.Event.Channel.Name}
+
+		models.UpdateChannel(&channelModel)
+		c.JSON(http.StatusNoContent, nil)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+}
+
+func handleUserChange(c *gin.Context) {
+	var userJson models.SlackUserChangePost
+	if err := c.ShouldBindBodyWith(&userJson, binding.JSON); err == nil {
+		userModel := models.User{
+			TeamID:      userJson.TeamID,
+			UserID:      userJson.Event.User.ID,
+			UserDisplay: userJson.Event.User.Profile.DisplayName}
+
+		models.UpdateUser(&userModel)
 		c.JSON(http.StatusNoContent, nil)
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

@@ -18,7 +18,7 @@ func SaveChannel(channel *Channel) {
 }
 
 func GetChannel(teamId string, channelId string) *Channel {
-	selectStmt, err := db.Prepare("SELECT teamId, channelId, channelName FROM channels WHERE teamId = ? AND channelID = ?")
+	selectStmt, err := db.Prepare("SELECT teamID, channelID, channelName FROM channels WHERE teamID = ? AND channelID = ?")
 	if err != nil {
 		panic(err)
 	}
@@ -33,4 +33,20 @@ func GetChannel(teamId string, channelId string) *Channel {
 	default:
 	}
 	return channel
+}
+
+func UpdateChannel(channel *Channel) {
+	updateChannelStmt, err := db.Prepare("UPDATE channels SET channelName = ? WHERE teamID = ? AND channelID = ?")
+	if err != nil {
+		panic(err)
+	}
+	defer updateChannelStmt.Close()
+	updateChannelStmt.Exec(channel.ChannelName, channel.TeamID, channel.ChannelID)
+
+	updateMessagesStmt, err := db.Prepare("UPDATE messages SET channelName = ? WHERE teamID = ? AND channelID = ?")
+	if err != nil {
+		panic(err)
+	}
+	defer updateMessagesStmt.Close()
+	updateMessagesStmt.Exec(channel.ChannelName, channel.TeamID, channel.ChannelID)
 }

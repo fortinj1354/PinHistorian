@@ -1,15 +1,21 @@
 package models
 
-type GenericSlackPost struct {
+type SlackGenericEventPost struct {
 	Token string `json:"token" binding:"required,min=1"`
 	Type  string `json:"type" binding:"required,eq=url_verification|eq=event_callback"`
 }
 
-type UrlVerificationSlackPost struct {
+type SlackURLVerificationPost struct {
 	Challenge string `json:"challenge" binding:"required,min=1"`
 }
 
-type PinSlackPost struct {
+type SlackEventCallbackPost struct {
+	Event struct {
+		Type string `json:"type" binding:"required,eq=pin_added|eq=channel_rename|eq=user_change"`
+	} `json:"event" binding:"required"`
+}
+
+type SlackPinPost struct {
 	TeamID string `json:"team_id" binding:"required,min=1"`
 	Event  struct {
 		Type string `json:"type" binding:"required,eq=pin_added"`
@@ -24,6 +30,30 @@ type PinSlackPost struct {
 		} `json:"item" binding:"required"`
 	} `json:"event" binding:"required"`
 	EventID string `json:"event_id" binding:"required,min=1"`
+}
+
+type SlackChannelRenamePost struct {
+	TeamID string `json:"team_id" binding:"required,min=1"`
+	Event  struct {
+		Type    string `json:"type" binding:"required,eq=channel_rename"`
+		Channel struct {
+			ID   string `json:"id" binding:"required"`
+			Name string `json:"name" binding:"required"`
+		} `json:"channel" binding:"required"`
+	} `json:"event" binding:"required"`
+}
+
+type SlackUserChangePost struct {
+	TeamID string `json:"team_id" binding:"required,min=1"`
+	Event  struct {
+		Type string `json:"type" binding:"required,eq=user_change"`
+		User struct {
+			ID      string `json:"id" binding:"required"`
+			Profile struct {
+				DisplayName string `json:"display_name" binding:"required"`
+			} `json:"profile" binding:"required"`
+		} `json:"user" binding:"required"`
+	} `json:"event" binding:"required"`
 }
 
 type SlackUserRequest struct {

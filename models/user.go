@@ -18,7 +18,7 @@ func SaveUser(user *User) {
 }
 
 func GetUser(teamId string, userId string) *User {
-	selectStmt, err := db.Prepare("SELECT teamId, userId, userDisplay FROM users WHERE teamId = ? AND userID = ?")
+	selectStmt, err := db.Prepare("SELECT teamID, userID, userDisplay FROM users WHERE teamID = ? AND userID = ?")
 	if err != nil {
 		panic(err)
 	}
@@ -33,4 +33,20 @@ func GetUser(teamId string, userId string) *User {
 	default:
 	}
 	return user
+}
+
+func UpdateUser(user *User) {
+	updateChannelStmt, err := db.Prepare("UPDATE users SET userDisplay = ? WHERE teamID = ? AND userID = ?")
+	if err != nil {
+		panic(err)
+	}
+	defer updateChannelStmt.Close()
+	updateChannelStmt.Exec(user.UserDisplay, user.TeamID, user.UserID)
+
+	updateMessagesStmt, err := db.Prepare("UPDATE messages SET userDisplay = ? WHERE teamID = ? AND userID = ?")
+	if err != nil {
+		panic(err)
+	}
+	defer updateMessagesStmt.Close()
+	updateMessagesStmt.Exec(user.UserDisplay, user.TeamID, user.UserID)
 }

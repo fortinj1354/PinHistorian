@@ -12,7 +12,7 @@ import (
 )
 
 func HandlePost(c *gin.Context) {
-	var genericJson models.GenericSlackPost
+	var genericJson models.SlackGenericEventPost
 	if err := c.ShouldBindBodyWith(&genericJson, binding.JSON); err == nil {
 		if genericJson.Token != settings.GetSlackToken() {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -20,7 +20,7 @@ func HandlePost(c *gin.Context) {
 			if genericJson.Type == "url_verification" {
 				HandleUrlVerification(c)
 			} else if genericJson.Type == "event_callback" {
-				HandlePinnedItem(c)
+				HandleEventCallback(c)
 			}
 		}
 	} else {
