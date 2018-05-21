@@ -160,20 +160,12 @@ func resolveChannel(teamId string, channelId string) string {
 }
 
 func processMessageText(teamId string, messageText string) string {
-	re, err := regexp.Compile(`<@(U.{8})>`)
-	if err != nil {
-		panic(err)
-	}
-
+	re := regexp.MustCompile(`<@(U.{8})>`)
 	res := re.FindAllStringSubmatch(messageText, -1)
 
 	for _, match := range res {
 		userDisplay := resolveUser(teamId, match[1])
-		tempRe, err := regexp.Compile(match[0])
-		if err != nil {
-			panic(err)
-		}
-
+		tempRe := regexp.MustCompile(match[0])
 		messageText = tempRe.ReplaceAllString(messageText, "@"+userDisplay)
 	}
 
