@@ -59,6 +59,8 @@ type SlackUserChangePost struct {
 type SlackUserRequest struct {
 	Profile struct {
 		DisplayName string `json:"display_name"`
+		BotID       string `json:"bot_id"`
+		RealName    string `json:"real_name"`
 	} `json:"profile"`
 }
 

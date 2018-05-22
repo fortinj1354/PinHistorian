@@ -117,13 +117,18 @@ func resolveUser(teamId string, userId string) string {
 		}
 
 		userModel := models.User{
-			TeamID:      teamId,
-			UserID:      userId,
-			UserDisplay: user.Profile.DisplayName}
+			TeamID: teamId,
+			UserID: userId}
+
+		if user.Profile.BotID == "" {
+			userModel.UserDisplay = user.Profile.DisplayName
+		} else {
+			userModel.UserDisplay = user.Profile.RealName
+		}
 
 		models.SaveUser(&userModel)
 
-		return user.Profile.DisplayName
+		return userModel.UserDisplay
 	}
 }
 
