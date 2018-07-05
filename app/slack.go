@@ -10,38 +10,39 @@ import (
 	"github.com/fortinj1354/Pin-Historian/models"
 	"github.com/fortinj1354/Pin-Historian/settings"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 	"github.com/parnurzeal/gorequest"
 )
 
-func HandleUrlVerification(c *gin.Context) {
+func HandleUrlVerification(c *gin.Context, body []byte) {
 	var verificationJson models.SlackURLVerificationPost
-	if err := c.ShouldBindBodyWith(&verificationJson, binding.JSON); err == nil {
+	if err := json.Unmarshal(body, &verificationJson); err == nil {
 		c.JSON(http.StatusOK, gin.H{"challenge": verificationJson.Challenge})
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNoContent, nil)
+		panic(err)
 	}
 }
 
-func HandleEventCallback(c *gin.Context) {
+func HandleEventCallback(body []byte) {
+
 	var eventCallbackJson models.SlackEventCallbackPost
-	if err := c.ShouldBindBodyWith(&eventCallbackJson, binding.JSON); err == nil {
+	if err := json.Unmarshal(body, &eventCallbackJson); err == nil {
 		eventType := eventCallbackJson.Event.Type
 		if eventType == "pin_added" {
-			handlePinnedItem(c)
+			handlePinnedItem(body)
 		} else if eventType == "channel_rename" {
-			handleChannelRename(c)
+			handleChannelRename(body)
 		} else if eventType == "user_change" {
-			handleUserChange(c)
+			handleUserChange(body)
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		panic(err)
 	}
 }
 
-func handlePinnedItem(c *gin.Context) {
+func handlePinnedItem(body []byte) {
 	var pinJson models.SlackPinPost
-	if err := c.ShouldBindBodyWith(&pinJson, binding.JSON); err == nil {
+	if err := json.Unmarshal(body, &pinJson); err == nil {
 		timestamp, err := strconv.ParseFloat(pinJson.Event.Item.Message.Ts, 64)
 		if err != nil {
 			panic(err)
@@ -58,40 +59,36 @@ func handlePinnedItem(c *gin.Context) {
 			MessageTime: time.Unix(int64(timestamp), 0)}
 
 		models.SaveMessage(message)
-
-		c.JSON(http.StatusNoContent, nil)
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		panic(err)
 	}
 }
 
-func handleChannelRename(c *gin.Context) {
+func handleChannelRename(body []byte) {
 	var channelJson models.SlackChannelRenamePost
-	if err := c.ShouldBindBodyWith(&channelJson, binding.JSON); err == nil {
+	if err := json.Unmarshal(body, &channelJson); err == nil {
 		channelModel := models.Channel{
 			TeamID:      channelJson.TeamID,
 			ChannelID:   channelJson.Event.Channel.ID,
 			ChannelName: channelJson.Event.Channel.Name}
 
 		models.UpdateChannel(&channelModel)
-		c.JSON(http.StatusNoContent, nil)
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		panic(err)
 	}
 }
 
-func handleUserChange(c *gin.Context) {
+func handleUserChange(body []byte) {
 	var userJson models.SlackUserChangePost
-	if err := c.ShouldBindBodyWith(&userJson, binding.JSON); err == nil {
+	if err := json.Unmarshal(body, &userJson); err == nil {
 		userModel := models.User{
 			TeamID:      userJson.TeamID,
 			UserID:      userJson.Event.User.ID,
 			UserDisplay: userJson.Event.User.Profile.DisplayName}
 
 		models.UpdateUser(&userModel)
-		c.JSON(http.StatusNoContent, nil)
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		panic(err)
 	}
 }
 

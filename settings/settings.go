@@ -5,10 +5,11 @@ import (
 )
 
 type Settings struct {
-	SlackToken   string
-	SlackOAuth   string
-	DatabaseName string
-	QueryAPIKey  string
+	SlackSecret         string
+	SlackSigningVersion string
+	SlackOAuth          string
+	DatabaseName        string
+	QueryAPIKey         string
 }
 
 var settings Settings
@@ -16,10 +17,16 @@ var settings Settings
 func LoadSettings() {
 	settings = Settings{}
 
-	if value, found := os.LookupEnv("SLACK_TOKEN"); found {
-		settings.SlackToken = value
+	if value, found := os.LookupEnv("SLACK_SECRET"); found {
+		settings.SlackSecret = value
 	} else {
-		panic("No Slack Token")
+		panic("No Slack OAuth")
+	}
+
+	if value, found := os.LookupEnv("SLACK_VERIFICATION_VERSION"); found {
+		settings.SlackSigningVersion = value
+	} else {
+		settings.SlackSigningVersion = "v0"
 	}
 
 	if value, found := os.LookupEnv("SLACK_OAUTH"); found {
@@ -41,8 +48,12 @@ func LoadSettings() {
 	}
 }
 
-func GetSlackToken() string {
-	return settings.SlackToken
+func GetSlackSecret() string {
+	return settings.SlackSecret
+}
+
+func GetSlackSigningVersion() string {
+	return settings.SlackSigningVersion
 }
 
 func GetSlackOAuth() string {

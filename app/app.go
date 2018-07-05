@@ -1,31 +1,67 @@
 package app
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"math"
 	"net/http"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/fortinj1354/Pin-Historian/models"
 	"github.com/fortinj1354/Pin-Historian/settings"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
 func HandlePost(c *gin.Context) {
-	var genericJson models.SlackGenericEventPost
-	if err := c.ShouldBindBodyWith(&genericJson, binding.JSON); err == nil {
-		if genericJson.Token != settings.GetSlackToken() {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		} else {
+	bytes, _ := c.GetRawData()
+	requestTimestamp := c.GetHeader("X-Slack-Request-Timestamp")
+	requestSignature := c.GetHeader("X-Slack-Signature")
+
+	if validateSignature(string(bytes), requestTimestamp, settings.GetSlackSecret(), settings.GetSlackSigningVersion(), requestSignature) {
+		var genericJson models.SlackGenericEventPost
+		err := json.Unmarshal(bytes, &genericJson)
+		if err == nil {
 			if genericJson.Type == "url_verification" {
-				HandleUrlVerification(c)
+				HandleUrlVerification(c, bytes)
 			} else if genericJson.Type == "event_callback" {
-				HandleEventCallback(c)
+				c.JSON(http.StatusNoContent, nil)
+				go HandleEventCallback(bytes)
+			} else {
+				c.JSON(http.StatusNoContent, nil)
 			}
+		} else {
+			c.JSON(http.StatusNoContent, nil)
+			panic(err)
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 	}
+}
+
+func validateSignature(body string, timeString string, secret string, version string, signature string) bool {
+	match := false
+
+	if body != "" && timeString != "" && signature != "" {
+		timestamp, err := strconv.ParseFloat(timeString, 64)
+		if err != nil {
+			panic(err)
+		}
+		messageTime := time.Unix(int64(timestamp), 0)
+
+		baseString := version + ":" + timeString + ":" + body
+		mac := hmac.New(sha256.New, []byte(secret))
+		mac.Write([]byte(baseString))
+		calculated := mac.Sum(nil)
+		byteSig, _ := hex.DecodeString(signature[3:])
+
+		match = hmac.Equal(calculated, byteSig) && math.Abs(time.Since(messageTime).Seconds()) < 300
+	}
+
+	return match
 }
 
 func HandleGet(c *gin.Context) {

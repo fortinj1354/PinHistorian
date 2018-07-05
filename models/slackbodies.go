@@ -1,8 +1,7 @@
 package models
 
 type SlackGenericEventPost struct {
-	Token string `json:"token" binding:"required,min=1"`
-	Type  string `json:"type" binding:"required,eq=url_verification|eq=event_callback"`
+	Type string `json:"type" binding:"required,eq=url_verification|eq=event_callback"`
 }
 
 type SlackURLVerificationPost struct {
