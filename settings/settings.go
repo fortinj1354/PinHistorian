@@ -23,7 +23,7 @@ func LoadSettings() {
 		panic("No Slack OAuth")
 	}
 
-	if value, found := os.LookupEnv("SLACK_VERIFICATION_VERSION"); found {
+	if value, found := os.LookupEnv("SLACK_SIGNING_VERSION"); found {
 		settings.SlackSigningVersion = value
 	} else {
 		settings.SlackSigningVersion = "v0"
