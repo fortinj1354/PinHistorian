@@ -1,25 +1,27 @@
 package app
 
 import (
-	"net/http"
 	"sort"
 	"time"
 
 	"github.com/fortinj1354/Pin-Historian/models"
-	"github.com/gin-gonic/gin"
 )
 
-type Response struct {
+type PinResponse struct {
 	TeamID       string           `json:"teamId"`
-	ChannelID    string           `json:"channelId"`
+	ChannelID    string           `json:"channelId,omitempty"`
 	StartTime    string           `json:"startTime,omitempty"`
 	EndTime      string           `json:"endTime,omitempty"`
 	Results      []models.Message `json:"results"`
 	TotalResults int              `json:"totalResults"`
 }
 
-func BuildResponse(teamId string, channelId string, startTime time.Time, endTime time.Time, results []models.Message) *Response {
-	var response = &Response{}
+type ChannelResponse struct {
+	Channels []models.Channel `json:"channels"`
+}
+
+func buildPinResponse(teamId string, channelId string, startTime time.Time, endTime time.Time, results []models.Message) *PinResponse {
+	var response = &PinResponse{}
 	response.TeamID = teamId
 	response.ChannelID = channelId
 
@@ -46,27 +48,18 @@ func BuildResponse(teamId string, channelId string, startTime time.Time, endTime
 	return response
 }
 
-func QueryMessages(c *gin.Context, teamId string, channelId string, startTime time.Time, endTime time.Time) *[]models.Message {
-	var results []models.Message
+func QueryMessages(teamId string, channelId string, messageText string, userId string, startTime time.Time, endTime time.Time) *PinResponse {
+	results := models.GetMessages(teamId, channelId, messageText, userId, startTime, endTime)
 
-	if startTime.IsZero() && endTime.IsZero() {
-		results = models.GetAllMessages(teamId, channelId)
-	} else {
-		if !startTime.IsZero() {
-			if !endTime.IsZero() {
-				if startTime.After(endTime) {
-					c.JSON(http.StatusBadRequest, gin.H{"error": "startTime cannot be after endTime"})
-					return nil
-				} else {
-					results = models.GetMessagesInRange(teamId, channelId, startTime, endTime)
-				}
-			} else {
-				results = models.GetMessagesStartTime(teamId, channelId, startTime)
-			}
-		} else {
-			results = models.GetMessagesEndTime(teamId, channelId, endTime)
-		}
+	return buildPinResponse(teamId, channelId, startTime, endTime, results)
+}
+
+func QueryChannels(teamId string) *ChannelResponse {
+	results := models.GetChannels(teamId)
+
+	response := ChannelResponse{
+		Channels: results,
 	}
 
-	return &results
+	return &response
 }

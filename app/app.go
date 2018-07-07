@@ -64,7 +64,7 @@ func validateSignature(body string, timeString string, secret string, version st
 	return match
 }
 
-func HandleGet(c *gin.Context) {
+func HandleGetPins(c *gin.Context) {
 	authorization := c.GetHeader("Authorization")
 	re := regexp.MustCompile(`^Bearer (.+)$`)
 	apiKey := re.FindStringSubmatch(authorization)
@@ -74,6 +74,8 @@ func HandleGet(c *gin.Context) {
 	} else {
 		teamId := c.Param("teamId")
 		channelId := c.Param("channelId")
+		userId := c.Query("userId")
+		messageText := c.Query("messageText")
 		var startTime time.Time
 		var endTime time.Time
 
@@ -95,13 +97,12 @@ func HandleGet(c *gin.Context) {
 			}
 		}
 
-		results := QueryMessages(c, teamId, channelId, startTime, endTime)
-
-		if results == nil {
+		if !startTime.IsZero() && !endTime.IsZero() && startTime.After(endTime) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "startTime cannot be after endTime"})
 			return
 		}
 
-		response := BuildResponse(teamId, channelId, startTime, endTime, *results)
+		response := QueryMessages(teamId, channelId, messageText, userId, startTime, endTime)
 		c.JSON(http.StatusOK, response)
 	}
 }
@@ -113,4 +114,18 @@ func HandleHealth(c *gin.Context) {
 		panic(err)
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func HandleGetChannels(c *gin.Context) {
+	authorization := c.GetHeader("Authorization")
+	re := regexp.MustCompile(`^Bearer (.+)$`)
+	apiKey := re.FindStringSubmatch(authorization)
+
+	if apiKey == nil || apiKey[1] != settings.GetQueryAPIKey() {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+	} else {
+		teamId := c.Param("teamId")
+
+		c.JSON(http.StatusOK, QueryChannels(teamId))
+	}
 }

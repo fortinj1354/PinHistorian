@@ -50,3 +50,29 @@ func UpdateChannel(channel *Channel) {
 	defer updateMessagesStmt.Close()
 	updateMessagesStmt.Exec(channel.ChannelName, channel.TeamID, channel.ChannelID)
 }
+
+func GetChannels(teamId string) []Channel {
+	selectStmt, err := db.Prepare("SELECT teamId, channelID, channelName FROM channels WHERE teamID = ?")
+	if err != nil {
+		panic(err)
+	}
+	defer selectStmt.Close()
+	rows, selectErr := selectStmt.Query(teamId)
+	var channels []Channel
+
+	switch {
+	case selectErr == sql.ErrNoRows:
+		return channels
+	case selectErr != nil:
+		panic(err)
+	default:
+	}
+
+	for rows.Next() {
+		channel := Channel{}
+		rows.Scan(&channel.TeamID, &channel.ChannelID, &channel.ChannelName)
+		channels = append(channels, channel)
+	}
+
+	return channels
+}
