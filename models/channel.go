@@ -3,9 +3,9 @@ package models
 import "database/sql"
 
 type Channel struct {
-	TeamID      string
-	ChannelID   string
-	ChannelName string
+	TeamID      string `json:"teamId"`
+	ChannelID   string `json:"channelId"`
+	ChannelName string `json:"channelName"`
 }
 
 func SaveChannel(channel *Channel) {

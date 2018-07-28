@@ -17,7 +17,9 @@ type PinResponse struct {
 }
 
 type ChannelResponse struct {
-	Channels []models.Channel `json:"channels"`
+	TeamID       string           `json:"teamId"`
+	Results      []models.Channel `json:"results"`
+	TotalResults int              `json:"totalResults"`
 }
 
 func buildPinResponse(teamId string, channelId string, startTime time.Time, endTime time.Time, results []models.Message) *PinResponse {
@@ -48,6 +50,22 @@ func buildPinResponse(teamId string, channelId string, startTime time.Time, endT
 	return response
 }
 
+func buildChannelResponse(teamId string, results []models.Channel) *ChannelResponse {
+	var response = &ChannelResponse{}
+
+	response.TeamID = teamId
+
+	if len(results) < 1 {
+		response.Results = []models.Channel{}
+		response.TotalResults = 0
+	} else {
+		response.Results = results
+		response.TotalResults = len(results)
+	}
+
+	return response
+}
+
 func QueryMessages(teamId string, channelId string, messageText string, userId string, startTime time.Time, endTime time.Time) *PinResponse {
 	results := models.GetMessages(teamId, channelId, messageText, userId, startTime, endTime)
 
@@ -57,9 +75,5 @@ func QueryMessages(teamId string, channelId string, messageText string, userId s
 func QueryChannels(teamId string) *ChannelResponse {
 	results := models.GetChannels(teamId)
 
-	response := ChannelResponse{
-		Channels: results,
-	}
-
-	return &response
+	return buildChannelResponse(teamId, results)
 }
