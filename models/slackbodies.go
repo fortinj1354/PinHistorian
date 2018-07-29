@@ -68,3 +68,9 @@ type SlackChannelRequest struct {
 		Name string `json:"name"`
 	} `json:"channel"`
 }
+
+type SlackGroupRequest struct {
+	Group struct {
+		Name string `json:"name"`
+	} `json:"group"`
+}
