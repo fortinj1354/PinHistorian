@@ -44,19 +44,14 @@ func handlePinnedItem(body []byte) {
 	var pinJson models.SlackPinPost
 	if err := json.Unmarshal(body, &pinJson); err == nil {
 		firstChar := pinJson.Event.Item.Channel[0]
-		//Discard messages from DMs
-		if firstChar == 'C' || firstChar == 'G' {
+		//Discard messages from DMs and private groups
+		if firstChar == 'C' {
 			timestamp, err := strconv.ParseFloat(pinJson.Event.Item.Message.Ts, 64)
 			if err != nil {
 				panic(err)
 			}
 
-			var groupName string
-			if firstChar == 'C' {
-				groupName = resolveChannel(pinJson.TeamID, pinJson.Event.Item.Channel)
-			} else {
-				groupName = resolveGroup(pinJson.TeamID, pinJson.Event.Item.Channel)
-			}
+			var groupName = resolveChannel(pinJson.TeamID, pinJson.Event.Item.Channel)
 
 			message := &models.Message{
 				EventID:     pinJson.EventID,
@@ -169,39 +164,6 @@ func resolveChannel(teamId string, channelId string) string {
 		models.SaveChannel(&channelModel)
 
 		return channel.Channel.Name
-	}
-}
-
-func resolveGroup(teamId string, groupId string) string {
-	foundGroup := models.GetChannel(teamId, groupId)
-
-	if foundGroup != nil {
-		return foundGroup.ChannelName
-	} else {
-		request := gorequest.New()
-		resp, _, err := request.Get("https://slack.com/api/groups.info").
-			Set("Authorization", "Bearer "+settings.GetSlackOAuth()).
-			Query("channel=" + groupId).
-			End()
-
-		if err != nil {
-			panic(err)
-		}
-
-		var group models.SlackGroupRequest
-		jerr := json.NewDecoder(resp.Body).Decode(&group)
-		if jerr != nil {
-			panic(err)
-		}
-
-		channelModel := models.Channel{
-			TeamID:      teamId,
-			ChannelID:   groupId,
-			ChannelName: group.Group.Name}
-
-		models.SaveChannel(&channelModel)
-
-		return group.Group.Name
 	}
 }
 
