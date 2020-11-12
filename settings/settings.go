@@ -10,6 +10,8 @@ type Settings struct {
 	SlackOAuth          string
 	DatabaseName        string
 	QueryAPIKey         string
+	SentryDSN           string
+	SentryEnvironment   string
 }
 
 var settings Settings
@@ -46,6 +48,14 @@ func LoadSettings() {
 	} else {
 		settings.DatabaseName = "PinHistorian.sqlite"
 	}
+
+	if value, found := os.LookupEnv("SENTRY_DSN"); found {
+		settings.SentryDSN = value
+	}
+
+	if value, found := os.LookupEnv("SENTRY_ENVIRONMENT"); found {
+		settings.SentryEnvironment = value
+	}
 }
 
 func GetSlackSecret() string {
@@ -66,4 +76,12 @@ func GetDatabaseName() string {
 
 func GetQueryAPIKey() string {
 	return settings.QueryAPIKey
+}
+
+func GetSentryDSN() string {
+	return settings.SentryDSN
+}
+
+func GetSentryEnvironment() string {
+	return settings.SentryEnvironment
 }

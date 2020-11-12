@@ -104,18 +104,14 @@ func resolveUser(teamId string, userId string) string {
 	if foundUser != nil {
 		return foundUser.UserDisplay
 	} else {
+		var user models.SlackUserRequest
+
 		request := gorequest.New()
-		resp, _, err := request.Get("https://slack.com/api/users.profile.get").
+		_, _, err := request.Get("https://slack.com/api/users.profile.get").
 			Set("Authorization", "Bearer "+settings.GetSlackOAuth()).
 			Query("user=" + userId).
-			End()
+			EndStruct(&user)
 		if err != nil {
-			panic(err)
-		}
-
-		var user models.SlackUserRequest
-		jerr := json.NewDecoder(resp.Body).Decode(&user)
-		if jerr != nil {
 			panic(err)
 		}
 
@@ -141,18 +137,14 @@ func resolveChannel(teamId string, channelId string) string {
 	if foundChannel != nil {
 		return foundChannel.ChannelName
 	} else {
+		var channel models.SlackChannelRequest
+
 		request := gorequest.New()
-		resp, _, err := request.Get("https://slack.com/api/channels.info").
+		_, _, err := request.Get("https://slack.com/api/conversations.info").
 			Set("Authorization", "Bearer "+settings.GetSlackOAuth()).
 			Query("channel=" + channelId).
-			End()
+			EndStruct(&channel)
 		if err != nil {
-			panic(err)
-		}
-
-		var channel models.SlackChannelRequest
-		jerr := json.NewDecoder(resp.Body).Decode(&channel)
-		if jerr != nil {
 			panic(err)
 		}
 
