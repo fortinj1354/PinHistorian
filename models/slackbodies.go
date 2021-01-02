@@ -74,3 +74,9 @@ type SlackGroupRequest struct {
 		Name string `json:"name"`
 	} `json:"group"`
 }
+
+type SlackAddReactionRequest struct {
+	Channel   string `json:"channel"`
+	Name      string `json:"name"`
+	Timestamp string `json:"timestamp"`
+}

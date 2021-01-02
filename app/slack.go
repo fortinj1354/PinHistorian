@@ -64,6 +64,8 @@ func handlePinnedItem(body []byte) {
 				MessageTime: time.Unix(int64(timestamp), 0)}
 
 			models.SaveMessage(message)
+
+			addSavedReaction(pinJson.Event.Item.Channel, pinJson.Event.Item.Message.Ts)
 		}
 	} else {
 		panic(err)
@@ -156,6 +158,25 @@ func resolveChannel(teamId string, channelId string) string {
 		models.SaveChannel(&channelModel)
 
 		return channel.Channel.Name
+	}
+}
+
+func addSavedReaction(channelId string, timestamp string) {
+	payload := models.SlackAddReactionRequest{
+		Channel:   channelId,
+		Name:      "floppy_disk",
+		Timestamp: timestamp,
+	}
+
+	request := gorequest.New()
+	_, _, err := request.Post("https://slack.com/api/reactions.add").
+		Set("Authorization", "Bearer "+settings.GetSlackOAuth()).
+		Type("json").
+		Send(payload).
+		End()
+
+	if err != nil {
+		panic(err)
 	}
 }
 
