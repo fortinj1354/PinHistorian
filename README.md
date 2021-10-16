@@ -37,3 +37,4 @@ Bot Token OAuth Scopes:
 - pins:read
 - users.profile:read
 - users:read
+- reactions:write
