@@ -121,7 +121,7 @@ func resolveUser(teamId string, userId string) string {
 			TeamID: teamId,
 			UserID: userId}
 
-		if user.Profile.BotID == "" {
+		if user.Profile.DisplayName != "" {
 			userModel.UserDisplay = user.Profile.DisplayName
 		} else {
 			userModel.UserDisplay = user.Profile.RealName
